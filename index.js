@@ -1,5 +1,6 @@
 const express = require('express')
 const cors = require('cors');
+const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const { MongoClient, ServerApiVersion, MongoRuntimeError } = require('mongodb');
 const app = express()
@@ -18,6 +19,7 @@ async function run() {
         await client.connect();
         const serviceCollection = client.db('doctors_portal').collection('services');
         const bookingCollection = client.db('doctors_portal').collection('bookings');
+        const userCollection = client.db('doctors_portal').collection('users');
 
         // all services
         app.get('/service', async (req, res) => {
@@ -26,6 +28,22 @@ async function run() {
             const services = await cursor.toArray();
             res.send(services);
         });
+
+        // user update
+        app.put('/user/:email', async (req, res) => {
+            const email = req.params.email;
+            const user = req.body;
+            const filter = { email: email };
+            const options = { upsert: true };
+            const updateDoc = {
+                $set: user,
+            }
+            const result = await userCollection.updateOne(filter, updateDoc, options);
+            const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
+            res.send({ result, token });
+        });
+
+
         // this is not the proper way to query
         // after learning more about mongodb . use
         app.get('/available', async (req, res) => {
