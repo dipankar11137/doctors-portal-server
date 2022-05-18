@@ -61,6 +61,22 @@ async function run() {
             const services = await cursor.toArray();
             res.send(services);
         });
+        // all user
+        app.get('/user', async (req, res) => {
+            const users = await userCollection.find().toArray();
+            res.send(users);
+        });
+
+        // input admin
+        app.put('/user/admin/:email', async (req, res) => {
+            const email = req.params.email;
+            const filter = { email: email };
+            const updateDoc = {
+                $set: { role: 'admin' },
+            }
+            const result = await userCollection.updateOne(filter, updateDoc);
+            res.send(result);
+        });
 
         // user update
         app.put('/user/:email', async (req, res) => {
@@ -116,7 +132,7 @@ async function run() {
 
         app.get('/booking', async (req, res) => {
             const patient = req.query.patient;
-            const authorization = req.headers.authorization;
+            // const authorization = req.headers.authorization;
             // const decodedEmail = req.decoded.email;
             // if (patient === decodedEmail) {
             const query = { patient: patient };
