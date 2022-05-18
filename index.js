@@ -67,6 +67,14 @@ async function run() {
             res.send(users);
         });
 
+        // admin check
+        app.get('/admin/:email', async (req, res) => {
+            const email = req.params.email;
+            const user = await userCollection.findOne({ email: email });
+            const isAdmin = user.role === 'admin';
+            res.send({ admin: isAdmin })
+        })
+
         // input admin
         app.put('/user/admin/:email', verifyJWT, async (req, res) => {
             const email = req.params.email;
